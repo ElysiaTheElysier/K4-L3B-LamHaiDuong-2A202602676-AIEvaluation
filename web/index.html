@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OrbitTech AI Evaluation & Benchmarking Studio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- Top Navigation Header -->
+  <header class="app-header">
+    <div class="header-left">
+      <div class="brand-logo">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+          <polyline points="2 17 12 22 22 17"></polyline>
+          <polyline points="2 12 12 17 22 12"></polyline>
+        </svg>
+      </div>
+      <div>
+        <div class="brand-title">OrbitTech Evaluation Studio</div>
+        <div class="brand-subtitle">AI Evaluation & Benchmarking Pipeline · CP1–CP4 Interactive Demo</div>
+      </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <nav class="nav-tabs">
+      <button class="nav-tab active" data-tab="workspace">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+        Workspace
+      </button>
+      <button class="nav-tab" data-tab="failures">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+        Failure Deep-Dive
+      </button>
+      <button class="nav-tab" data-tab="rerank">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 3 21 3 21 8"></polyline><line x1="4" y1="20" x2="21" y2="3"></line><polyline points="21 16 21 21 16 21"></polyline><line x1="15" y1="15" x2="21" y2="21"></line><line x1="4" y1="4" x2="9" y2="9"></line></svg>
+        Reranking Demo
+      </button>
+      <button class="nav-tab" data-tab="judge">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+        LLM Judge & Bias
+      </button>
+      <button class="nav-tab" data-tab="regression">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+        CI/CD Quality Gate
+      </button>
+    </nav>
+
+    <!-- Header Stats Banner -->
+    <div class="header-stats" id="global-stats-bar">
+      <div class="stat-pill pass-rate" title="Benchmark Pass Rate">
+        <span class="pill-label">Pass</span>
+        <span class="pill-value" id="hdr-pass-rate">60.0%</span>
+      </div>
+      <div class="stat-pill" title="Average Context Recall">
+        <span class="pill-label">Recall</span>
+        <span class="pill-value" id="hdr-recall">0.940</span>
+      </div>
+      <div class="stat-pill" title="Average Context Precision">
+        <span class="pill-label">Precision</span>
+        <span class="pill-value" id="hdr-precision">0.918</span>
+      </div>
+      <div class="stat-pill" title="Average Overall Score">
+        <span class="pill-label">Overall</span>
+        <span class="pill-value" id="hdr-overall">0.645</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main View Container -->
+  <main class="main-container">
+
+    <!-- ============================================================ -->
+    <!-- TAB 1: WORKSPACE (CORE EVALUATION WORKSPACE) -->
+    <!-- ============================================================ -->
+    <section id="tab-workspace" class="tab-content active">
+      <div class="workspace-layout">
+        
+        <!-- Left Sidebar: Test Cases Browser -->
+        <aside class="sidebar">
+          <div class="sidebar-header">
+            <div class="sidebar-title-row">
+              <span class="sidebar-title">BENCHMARK CASES</span>
+              <span class="case-counter-badge" id="case-counter">20 / 20</span>
+            </div>
+            <!-- Search Input -->
+            <div class="search-box">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+              <input type="text" id="case-search" placeholder="Search case ID or keywords..." autocomplete="off">
+            </div>
+            <!-- Filters -->
+            <div class="filter-group">
+              <div class="filter-label">Difficulty:</div>
+              <div class="pill-filters" id="difficulty-filters">
+                <button class="filter-pill active" data-filter="all">All</button>
+                <button class="filter-pill" data-filter="easy">Easy</button>
+                <button class="filter-pill" data-filter="medium">Medium</button>
+                <button class="filter-pill" data-filter="hard">Hard</button>
+                <button class="filter-pill" data-filter="adversarial">Adv</button>
+              </div>
+            </div>
+            <div class="filter-group">
+              <div class="filter-label">Status:</div>
+              <div class="pill-filters" id="status-filters">
+                <button class="filter-pill active" data-status="all">All (20)</button>
+                <button class="filter-pill" data-status="passed">Pass (12)</button>
+                <button class="filter-pill" data-status="failed">Fail (8)</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Cases Scroll List -->
+          <div class="cases-list" id="cases-list">
+            <!-- Dynamically populated -->
+          </div>
+        </aside>
+
+        <!-- Right Main Stage: Case Details & Diagnostics -->
+        <div class="stage">
+
+          <!-- 1. Pipeline Stepper Visualizer -->
+          <div class="pipeline-card">
+            <div class="pipeline-header">
+              <div class="pipeline-title">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
+                EVALUATION PIPELINE FLOW
+              </div>
+              <div class="pipeline-active-case" id="pipeline-case-label">Case: E01</div>
+            </div>
+            <div class="pipeline-flow" id="pipeline-flow">
+              <div class="pipe-node" id="node-question">
+                <div class="node-icon">1</div>
+                <div class="node-content">
+                  <div class="node-title">Question</div>
+                  <div class="node-sub">Golden Dataset</div>
+                </div>
+              </div>
+              <div class="pipe-arrow">→</div>
+              <div class="pipe-node" id="node-retriever">
+                <div class="node-icon">2</div>
+                <div class="node-content">
+                  <div class="node-title">Retriever</div>
+                  <div class="node-sub">BM25 Search</div>
+                </div>
+              </div>
+              <div class="pipe-arrow">→</div>
+              <div class="pipe-node" id="node-contexts">
+                <div class="node-icon">3</div>
+                <div class="node-content">
+                  <div class="node-title">Ranked Chunks</div>
+                  <div class="node-sub">Top-5 Contexts</div>
+                </div>
+              </div>
+              <div class="pipe-arrow">→</div>
+              <div class="pipe-node" id="node-generator">
+                <div class="node-icon">4</div>
+                <div class="node-content">
+                  <div class="node-title">Generator</div>
+                  <div class="node-sub">GPT-4o-mini</div>
+                </div>
+              </div>
+              <div class="pipe-arrow">→</div>
+              <div class="pipe-node" id="node-answer">
+                <div class="node-icon">5</div>
+                <div class="node-content">
+                  <div class="node-title">Actual Answer</div>
+                  <div class="node-sub">Response Trace</div>
+                </div>
+              </div>
+              <div class="pipe-arrow">→</div>
+              <div class="pipe-node" id="node-evaluator">
+                <div class="node-icon">6</div>
+                <div class="node-content">
+                  <div class="node-title">Evaluator</div>
+                  <div class="node-sub">RAGAS Engine</div>
+                </div>
+              </div>
+              <div class="pipe-arrow">→</div>
+              <div class="pipe-node result-node" id="node-result">
+                <div class="node-icon">✓</div>
+                <div class="node-content">
+                  <div class="node-title" id="node-result-title">Result</div>
+                  <div class="node-sub" id="node-result-sub">PASSED</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Diagnostic Root Cause Verdict Banner -->
+            <div class="diagnostic-banner" id="diagnostic-banner">
+              <div class="diag-icon-col" id="diag-icon-wrapper">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+              </div>
+              <div class="diag-text-col">
+                <div class="diag-headline" id="diag-headline">Diagnostic Verdict: Balanced Quality</div>
+                <div class="diag-explanation" id="diag-explanation">Both retrieval and generation passed all required thresholds.</div>
+              </div>
+              <div class="diag-badge-col" id="diag-badge-col">
+                <span class="verdict-tag success" id="diag-verdict-tag">PASS</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 2. Two-Column Workspace Layout -->
+          <div class="details-grid">
+            
+            <!-- Left Column: User Prompt & Answers -->
+            <div class="column-answers">
+              <!-- Question Card -->
+              <div class="content-card">
+                <div class="card-header">
+                  <div class="card-title">
+                    <span class="badge-tag" id="detail-id">E01</span>
+                    <span class="difficulty-pill easy" id="detail-difficulty">Easy</span>
+                    <span class="attack-pill" id="detail-attack" style="display:none;">Out of Scope</span>
+                  </div>
+                  <span class="card-hint">Test Input</span>
+                </div>
+                <div class="question-text" id="detail-question">Loading question...</div>
+              </div>
+
+              <!-- Expected Answer Card -->
+              <div class="content-card golden-card">
+                <div class="card-header">
+                  <div class="card-title">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path></svg>
+                    EXPECTED ANSWER (GOLDEN REFERENCE)
+                  </div>
+                  <span class="badge-verbatim" title="100% verbatim substring in corpus">Verbatim Ground Truth</span>
+                </div>
+                <div class="answer-text expected" id="detail-expected">Loading expected answer...</div>
+              </div>
+
+              <!-- Actual Answer Card -->
+              <div class="content-card actual-card">
+                <div class="card-header">
+                  <div class="card-title">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+                    ACTUAL SYSTEM ANSWER (GPT-4O-MINI)
+                  </div>
+                  <span class="model-tag">model: gpt-4o-mini</span>
+                </div>
+                <div class="answer-text actual" id="detail-actual">Loading actual answer...</div>
+              </div>
+            </div>
+
+            <!-- Right Column: Retrieved Chunks (Ranked 1 to 5) -->
+            <div class="column-retrieval">
+              <div class="content-card contexts-card">
+                <div class="card-header">
+                  <div class="card-title">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+                    RETRIEVED CONTEXTS (RANKED TOP-5)
+                  </div>
+                  <span class="card-hint" id="contexts-summary-hint">5 chunks retrieved</span>
+                </div>
+                <div class="chunks-container" id="chunks-container">
+                  <!-- Dynamically rendered ranked chunks -->
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- 3. Metrics & Diagnostic Breakdown Panel -->
+          <div class="metrics-panel">
+            
+            <!-- Group 1: Retrieval Quality -->
+            <div class="metrics-card">
+              <div class="mgroup-header">
+                <div class="mgroup-title">
+                  <span class="mgroup-badge retrieval">RETRIEVER</span>
+                  <span>Retrieval Quality</span>
+                </div>
+                <span class="mgroup-diag" id="retrieval-status-diag">Healthy</span>
+              </div>
+              <p class="mgroup-desc">Diagnoses the Retriever: Did it fetch the required evidence and place it at top ranks?</p>
+              
+              <div class="metric-row">
+                <div class="metric-info">
+                  <span class="metric-name">Context Recall</span>
+                  <span class="metric-score" id="val-recall">1.000</span>
+                </div>
+                <div class="metric-bar-bg"><div class="metric-bar-fill" id="bar-recall" style="width: 100%;"></div></div>
+                <div class="metric-hint">Proportion of expected answer covered by retrieved chunks</div>
+              </div>
+
+              <div class="metric-row">
+                <div class="metric-info">
+                  <span class="metric-name">Context Precision (AP@K)</span>
+                  <span class="metric-score" id="val-precision">0.804</span>
+                </div>
+                <div class="metric-bar-bg"><div class="metric-bar-fill" id="bar-precision" style="width: 80.4%;"></div></div>
+                <div class="metric-hint">Rank-aware precision rewarding relevant evidence at top ranks</div>
+              </div>
+            </div>
+
+            <!-- Group 2: Answer Quality -->
+            <div class="metrics-card">
+              <div class="mgroup-header">
+                <div class="mgroup-title">
+                  <span class="mgroup-badge generator">GENERATOR</span>
+                  <span>Answer Quality</span>
+                </div>
+                <span class="mgroup-diag" id="generation-status-diag">Healthy</span>
+              </div>
+              <p class="mgroup-desc">Diagnoses the LLM: Did it stay faithful to context and answer completely without drifting?</p>
+
+              <div class="metric-row">
+                <div class="metric-info">
+                  <span class="metric-name">Faithfulness</span>
+                  <span class="metric-score" id="val-faithfulness">0.769</span>
+                </div>
+                <div class="metric-bar-bg"><div class="metric-bar-fill" id="bar-faithfulness" style="width: 76.9%;"></div></div>
+                <div class="metric-hint">Factual grounding in retrieved context (1.0 = zero hallucination)</div>
+              </div>
+
+              <div class="metric-row">
+                <div class="metric-info">
+                  <span class="metric-name">Answer Relevance</span>
+                  <span class="metric-score" id="val-relevance">0.875</span>
+                </div>
+                <div class="metric-bar-bg"><div class="metric-bar-fill" id="bar-relevance" style="width: 87.5%;"></div></div>
+                <div class="metric-hint">Directness in addressing the user question without off-topic filler</div>
+              </div>
+
+              <div class="metric-row">
+                <div class="metric-info">
+                  <span class="metric-name">Completeness</span>
+                  <span class="metric-score" id="val-completeness">0.692</span>
+                </div>
+                <div class="metric-bar-bg"><div class="metric-bar-fill" id="bar-completeness" style="width: 69.2%;"></div></div>
+                <div class="metric-hint">Coverage of key facts and conditions present in ground truth</div>
+              </div>
+
+              <div class="overall-row">
+                <span class="overall-title">Overall Score (Average of 3 Answer Metrics)</span>
+                <span class="overall-val" id="val-overall">0.779</span>
+              </div>
+            </div>
+
+            <!-- Group 3: Diagnostics & Recommended Fix -->
+            <div class="metrics-card diagnosis-card">
+              <div class="mgroup-header">
+                <div class="mgroup-title">
+                  <span class="mgroup-badge eval">ANALYZER</span>
+                  <span>Verdict & Prescription</span>
+                </div>
+                <span class="status-badge-lg pass" id="val-pass-badge">PASSED</span>
+              </div>
+              <p class="mgroup-desc">Actionable diagnosis generated from FailureAnalyzer and 5 Whys analysis.</p>
+
+              <div class="diag-field">
+                <div class="diag-lbl">Failure Category:</div>
+                <div class="diag-val" id="diag-failure-type"><span class="badge-neutral">None (Healthy)</span></div>
+              </div>
+
+              <div class="diag-field">
+                <div class="diag-lbl">Weakest Metric:</div>
+                <div class="diag-val" id="diag-weakest-metric">Completeness (0.692)</div>
+              </div>
+
+              <div class="diag-field">
+                <div class="diag-lbl">Likely Root Cause:</div>
+                <div class="diag-val root-cause-text" id="diag-root-cause">All criteria satisfied above threshold.</div>
+              </div>
+
+              <div class="diag-field">
+                <div class="diag-lbl">Suggested Intervention:</div>
+                <div class="diag-val fix-text" id="diag-suggested-fix">Maintain prompt version and monitor regression in CI/CD.</div>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- TAB 2: FAILURE DEEP-DIVE -->
+    <!-- ============================================================ -->
+    <section id="tab-failures" class="tab-content">
+      <div class="tab-page-container">
+        
+        <div class="section-intro">
+          <h2>Failure Deep-Dive & Root Cause Taxonomy</h2>
+          <p>
+            Systematic investigation into the 8 failed benchmark cases. In production RAG systems, fixing one verified root cause typically resolves an entire failure cluster.
+          </p>
+        </div>
+
+        <!-- Failure KPI Cards -->
+        <div class="failure-kpi-grid">
+          <div class="kpi-card danger">
+            <div class="kpi-num" id="fail-kpi-total">8</div>
+            <div class="kpi-label">Total Failures</div>
+            <div class="kpi-sub">40.0% of benchmark set</div>
+          </div>
+          <div class="kpi-card warning">
+            <div class="kpi-num" id="fail-kpi-offtopic">5</div>
+            <div class="kpi-label">Off-Topic</div>
+            <div class="kpi-sub">Relevance < 0.5 (62.5% of failures)</div>
+          </div>
+          <div class="kpi-card warning">
+            <div class="kpi-num" id="fail-kpi-hallucination">1</div>
+            <div class="kpi-label">Hallucination (A01)</div>
+            <div class="kpi-sub">Faithfulness < 0.5 (Lexical mismatch)</div>
+          </div>
+          <div class="kpi-card warning">
+            <div class="kpi-num" id="fail-kpi-incomplete">1</div>
+            <div class="kpi-label">Incomplete (A02)</div>
+            <div class="kpi-sub">Completeness < 0.5 (Injection refusal)</div>
+          </div>
+          <div class="kpi-card warning">
+            <div class="kpi-num" id="fail-kpi-irrelevant">1</div>
+            <div class="kpi-label">Irrelevant (A03)</div>
+            <div class="kpi-sub">Relevance < 0.5 (False premise trap)</div>
+          </div>
+        </div>
+
+        <!-- Diagnostic Chain Explainer -->
+        <div class="diagnostic-chain-card">
+          <div class="card-header">
+            <div class="card-title">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+              DIAGNOSTIC CHAIN: 5 WHYS ROOT CAUSE RESOLUTION
+            </div>
+            <span class="card-hint">Interactive Investigation</span>
+          </div>
+
+          <div class="chain-picker-row">
+            <label for="failed-case-select">Select Failed Case to Trace:</label>
+            <select id="failed-case-select" class="form-select">
+              <option value="A01">A01 — Medical advice jailbreak (Score: 0.237, Hallucination)</option>
+              <option value="A03">A03 — False premise cash refund (Score: 0.282, Irrelevant)</option>
+              <option value="A02">A02 — System override admin credentials (Score: 0.359, Incomplete)</option>
+              <option value="H01">H01 — NovaBook instalment failure & port defect (Score: 0.460, Off-topic)</option>
+              <option value="H03">H03 — Express shipping refund & package damage (Score: 0.511, Off-topic)</option>
+              <option value="H02">H02 — OrbitPlus refund & loaner device (Score: 0.639, Off-topic)</option>
+              <option value="E03">E03 — OrbitPlus annual fee (Score: 0.698, Off-topic)</option>
+              <option value="H05">H05 — Direct escalation to supervisor (Score: 0.735, Off-topic)</option>
+            </select>
+          </div>
+
+          <!-- 5 Steps Flow -->
+          <div class="chain-steps-grid" id="chain-steps-display">
+            <!-- Dynamically populated from JS -->
+          </div>
+        </div>
+
+        <!-- Failure Taxonomy & Improvement Log Table -->
+        <div class="improvement-log-card">
+          <div class="card-header">
+            <div class="card-title">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+              IMPROVEMENT LOG (Generated by FailureAnalyzer)
+            </div>
+            <span class="badge-neutral">4 Prioritized Fixes</span>
+          </div>
+          <div class="table-responsive">
+            <table class="data-table" id="improvement-log-table">
+              <thead>
+                <tr>
+                  <th>Failure ID</th>
+                  <th>Type</th>
+                  <th>Failed Case</th>
+                  <th>Diagnosed Root Cause</th>
+                  <th>Suggested Architectural Fix</th>
+                  <th>Priority</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="improvement-log-body">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- TAB 3: RERANKING EXPERIMENT (BONUS / EXERCISE 3.5) -->
+    <!-- ============================================================ -->
+    <section id="tab-rerank" class="tab-content">
+      <div class="tab-page-container">
+        
+        <div class="section-intro">
+          <h2>Retrieval Reranking Experiment (Exercise 3.5)</h2>
+          <p>
+            Proving the core principle of Reranking: <strong>Reranking permutes the order of retrieved chunks without adding or deleting documents</strong>. 
+            Therefore, <strong>Context Recall remains mathematically identical</strong>, while <strong>rank-aware Context Precision (AP@K) increases</strong> because relevant chunks rise to the top.
+          </p>
+        </div>
+
+        <!-- KPI Comparison Banner -->
+        <div class="rerank-kpi-banner">
+          <div class="rkpi-col">
+            <div class="rkpi-title">Average Context Recall</div>
+            <div class="rkpi-numbers">
+              <span class="rkpi-before">0.878</span>
+              <span class="rkpi-arrow">→</span>
+              <span class="rkpi-after">0.878</span>
+              <span class="rkpi-delta neutral">Δ = 0.000</span>
+            </div>
+            <div class="rkpi-note">Identical union of evidence tokens; zero information loss</div>
+          </div>
+          <div class="rkpi-divider"></div>
+          <div class="rkpi-col">
+            <div class="rkpi-title">Average Context Precision (AP@K)</div>
+            <div class="rkpi-numbers">
+              <span class="rkpi-before">0.801</span>
+              <span class="rkpi-arrow">→</span>
+              <span class="rkpi-after">1.000</span>
+              <span class="rkpi-delta positive">Δ = +0.199 (+24.8%)</span>
+            </div>
+            <div class="rkpi-note">Relevant chunks elevated to rank #1; distractor noise pushed down</div>
+          </div>
+        </div>
+
+        <!-- Case Selector Buttons -->
+        <div class="rerank-selector-card">
+          <div class="rerank-cases-pills" id="rerank-case-buttons">
+            <button class="rcase-btn active" data-rcase="E01">E01 (NovaBook Charger)</button>
+            <button class="rcase-btn" data-rcase="M02">M02 (Unauthorized Order)</button>
+            <button class="rcase-btn" data-rcase="M04">M04 (Address Change)</button>
+            <button class="rcase-btn" data-rcase="H03">H03 (Express Delay)</button>
+            <button class="rcase-btn" data-rcase="A01">A01 (Medical Advice)</button>
+          </div>
+          <button class="btn-primary" id="btn-run-rerank">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 3 21 3 21 8"></polyline><line x1="4" y1="20" x2="21" y2="3"></line><polyline points="21 16 21 21 16 21"></polyline><line x1="15" y1="15" x2="21" y2="21"></line><line x1="4" y1="4" x2="9" y2="9"></line></svg>
+            Re-run Rerank on Server
+          </button>
+        </div>
+
+        <!-- Side-by-side Dual Column -->
+        <div class="rerank-split-grid">
+          
+          <!-- Column 1: Before Reranking (BM25) -->
+          <div class="rerank-col">
+            <div class="rcol-header">
+              <div class="rcol-title">ORIGINAL RETRIEVAL ORDER (BM25)</div>
+              <div class="rcol-metrics" id="rcol-metrics-before">Recall: 1.000 | Precision: 0.804</div>
+            </div>
+            <div class="rchunks-list" id="rchunks-before">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
+
+          <!-- Column 2: After Reranking (Overlap Reranker) -->
+          <div class="rerank-col reranked-col">
+            <div class="rcol-header">
+              <div class="rcol-title">AFTER OVERLAP RERANKING</div>
+              <div class="rcol-metrics positive" id="rcol-metrics-after">Recall: 1.000 | Precision: 1.000 (Δ = +0.196)</div>
+            </div>
+            <div class="rchunks-list" id="rchunks-after">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Architectural Reflection Box -->
+        <div class="info-callout-card">
+          <div class="callout-icon">💡</div>
+          <div class="callout-content">
+            <h4>When is Reranking NOT enough?</h4>
+            <p>
+              Reranking operates exclusively on the top-K candidate pool fetched by the initial retriever. It fails if:
+              (1) <strong>Retriever Failure:</strong> The gold chunk was completely missed in the initial top-K (Recall = 0);
+              (2) <strong>Chunk Fragmentation:</strong> Crucial clauses are broken across chunks;
+              (3) <strong>Semantic Drift:</strong> User query uses synonyms or colloquialisms not captured by keyword indexing. In those cases, Hybrid Search (Dense + Sparse) or Query Expansion (HyDE) is required.
+            </p>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- TAB 4: LLM JUDGE & BIAS (CP2 TASK 3 & EXERCISE 3.3) -->
+    <!-- ============================================================ -->
+    <section id="tab-judge" class="tab-content">
+      <div class="tab-page-container">
+        
+        <div class="section-intro">
+          <h2>LLM-as-a-Judge Rubric & Bias Detection</h2>
+          <p>
+            Evaluating language models with other language models requires calibrated rubrics and active bias mitigation.
+            The evaluator itself is not automatically neutral.
+          </p>
+        </div>
+
+        <!-- Rubric 1 to 5 Stars Cards -->
+        <div class="rubric-section">
+          <div class="section-subtitle">OrbitTech Store Customer Support Rubric (1–5 Thang điểm chuẩn hóa)</div>
+          <div class="rubric-grid" id="rubric-grid">
+            <!-- Dynamically populated from DATA_CACHE.rubric -->
+          </div>
+        </div>
+
+        <!-- Judge Bias Monitor & Interactive Simulator -->
+        <div class="judge-bias-section">
+          <div class="section-subtitle">Judge Bias Monitor (Wiring to LLMJudge.detect_bias)</div>
+          
+          <div class="bias-explain-grid">
+            <div class="bias-card">
+              <div class="bias-card-title">Positional Bias</div>
+              <p>The judge systematically favors whichever candidate response appears in Position 1. Detected when Position 1 mean score exceeds Position 2 by > 0.15.</p>
+              <div class="bias-remedy"><strong>Remedy:</strong> Pairwise order swap with consensus averaging.</div>
+            </div>
+            <div class="bias-card">
+              <div class="bias-card-title">Leniency Bias</div>
+              <p>The judge is overly generous, awarding passing marks to answers with subtle inaccuracies. Detected when average batch score > 0.8 across criteria.</p>
+              <div class="bias-remedy"><strong>Remedy:</strong> Few-shot calibration against human ground-truth labels.</div>
+            </div>
+            <div class="bias-card">
+              <div class="bias-card-title">Severity Bias</div>
+              <p>The judge is overly critical, failing valid concise responses. Detected when average batch score < 0.3 across criteria.</p>
+              <div class="bias-remedy"><strong>Remedy:</strong> Explicit rubric instructions to reward concise factual completeness.</div>
+            </div>
+          </div>
+
+          <!-- Interactive Bias Detector Playground -->
+          <div class="bias-tester-card">
+            <div class="card-header">
+              <div class="card-title">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon></svg>
+                LIVE BIAS DETECTOR SIMULATOR
+              </div>
+              <span class="card-hint">Calls LLMJudge.detect_bias()</span>
+            </div>
+
+            <div class="bias-tester-body">
+              <div class="tester-controls">
+                <div class="control-label">Load Test Batch Presets:</div>
+                <div class="preset-buttons">
+                  <button class="preset-btn" data-preset="neutral">Balanced Scores (No Bias)</button>
+                  <button class="preset-btn" data-preset="leniency">High Leniency (Scores > 0.85)</button>
+                  <button class="preset-btn" data-preset="severity">High Severity (Scores < 0.25)</button>
+                  <button class="preset-btn" data-preset="positional">Positional Bias (Pos 1 > 0.9, Pos 2 < 0.6)</button>
+                </div>
+              </div>
+
+              <!-- Output Status Badges -->
+              <div class="bias-results-display" id="bias-results-display">
+                <div class="bias-alert-pill" id="bstatus-pos">
+                  <span class="indicator green"></span>
+                  <span class="label">Positional Bias:</span>
+                  <span class="state" id="bval-pos">False (Passed)</span>
+                </div>
+                <div class="bias-alert-pill" id="bstatus-len">
+                  <span class="indicator green"></span>
+                  <span class="label">Leniency Bias:</span>
+                  <span class="state" id="bval-len">False (Passed)</span>
+                </div>
+                <div class="bias-alert-pill" id="bstatus-sev">
+                  <span class="indicator green"></span>
+                  <span class="label">Severity Bias:</span>
+                  <span class="state" id="bval-sev">False (Passed)</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- TAB 5: CI/CD REGRESSION GATE (CP3 TASK 4 & SECTION 5) -->
+    <!-- ============================================================ -->
+    <section id="tab-regression" class="tab-content">
+      <div class="tab-page-container">
+        
+        <div class="section-intro">
+          <h2>CI/CD Quality Gate & Regression Detection</h2>
+          <p>
+            Evaluation serves as an automated quality gate in the deployment pipeline. 
+            If any key metric degrades by <strong>more than 0.05</strong> against the established baseline, the release is blocked automatically.
+          </p>
+        </div>
+
+        <!-- Deployment Gate Status Banner -->
+        <div class="gate-banner-card passed" id="gate-banner">
+          <div class="gate-icon" id="gate-icon">✓</div>
+          <div class="gate-info">
+            <div class="gate-status-text" id="gate-status-title">DEPLOYMENT APPROVED (Quality Gate Passed)</div>
+            <div class="gate-status-sub" id="gate-status-sub">All metrics are within acceptable delta tolerances (Threshold: 0.05).</div>
+          </div>
+          <div class="gate-badge-box">
+            <span class="gate-verdict-badge approved" id="gate-verdict-badge">CI PASS</span>
+          </div>
+        </div>
+
+        <!-- Comparison Grid -->
+        <div class="regression-grid">
+          
+          <!-- Column 1: Interactive Candidate Simulator -->
+          <div class="reg-card">
+            <div class="card-header">
+              <div class="card-title">SIMULATE CANDIDATE RELEASE CHANGES</div>
+              <span class="card-hint">Adjust Metric Deltas</span>
+            </div>
+            
+            <div class="slider-control">
+              <div class="slider-header">
+                <span>Faithfulness Delta:</span>
+                <span class="slider-val" id="slider-faith-val">0.000</span>
+              </div>
+              <input type="range" id="slider-faith" min="-0.15" max="0.10" step="0.01" value="0.00">
+            </div>
+
+            <div class="slider-control">
+              <div class="slider-header">
+                <span>Relevance Delta:</span>
+                <span class="slider-val" id="slider-rel-val">0.000</span>
+              </div>
+              <input type="range" id="slider-rel" min="-0.15" max="0.10" step="0.01" value="0.00">
+            </div>
+
+            <div class="slider-control">
+              <div class="slider-header">
+                <span>Completeness Delta:</span>
+                <span class="slider-val" id="slider-comp-val">0.000</span>
+              </div>
+              <input type="range" id="slider-comp" min="-0.15" max="0.10" step="0.01" value="0.00">
+            </div>
+
+            <div class="slider-control">
+              <div class="slider-header">
+                <span>Regression Threshold:</span>
+                <span class="slider-val" id="slider-thresh-val">0.050</span>
+              </div>
+              <input type="range" id="slider-thresh" min="0.01" max="0.10" step="0.01" value="0.05">
+            </div>
+
+            <div class="preset-row">
+              <button class="btn-subtle" id="btn-reg-reset">Reset to Baseline</button>
+              <button class="btn-subtle danger" id="btn-reg-trigger">Simulate Faithfulness Drop (-0.08)</button>
+            </div>
+          </div>
+
+          <!-- Column 2: Baseline vs Candidate Score Table -->
+          <div class="reg-card">
+            <div class="card-header">
+              <div class="card-title">BASELINE VS CANDIDATE COMPARISON</div>
+              <span class="card-hint">Real Lab Data</span>
+            </div>
+            <table class="data-table reg-table">
+              <thead>
+                <tr>
+                  <th>Metric</th>
+                  <th>Baseline (Current)</th>
+                  <th>Candidate</th>
+                  <th>Delta</th>
+                  <th>Tolerance</th>
+                  <th>Gate Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>Faithfulness</strong></td>
+                  <td id="reg-b-faith">0.605</td>
+                  <td id="reg-c-faith">0.605</td>
+                  <td id="reg-d-faith">0.000</td>
+                  <td>≤ 0.050</td>
+                  <td id="reg-s-faith"><span class="badge-tag green">OK</span></td>
+                </tr>
+                <tr>
+                  <td><strong>Answer Relevance</strong></td>
+                  <td id="reg-b-rel">0.692</td>
+                  <td id="reg-c-rel">0.692</td>
+                  <td id="reg-d-rel">0.000</td>
+                  <td>≤ 0.050</td>
+                  <td id="reg-s-rel"><span class="badge-tag green">OK</span></td>
+                </tr>
+                <tr>
+                  <td><strong>Completeness</strong></td>
+                  <td id="reg-b-comp">0.640</td>
+                  <td id="reg-c-comp">0.640</td>
+                  <td id="reg-d-comp">0.000</td>
+                  <td>≤ 0.050</td>
+                  <td id="reg-s-comp"><span class="badge-tag green">OK</span></td>
+                </tr>
+                <tr class="highlight-row">
+                  <td><strong>Overall Score</strong></td>
+                  <td id="reg-b-over">0.645</td>
+                  <td id="reg-c-over">0.645</td>
+                  <td id="reg-d-over">0.000</td>
+                  <td>—</td>
+                  <td id="reg-s-over"><span class="badge-tag green">OK</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+        </div>
+
+        <!-- Production CI/CD 4-Stage Architecture Diagram -->
+        <div class="cicd-flow-card">
+          <div class="card-header">
+            <div class="card-title">PRODUCTION CI/CD EVALUATION PIPELINE STAGES</div>
+            <span class="card-hint">From Reflection Section 5</span>
+          </div>
+          <div class="cicd-stages-grid">
+            <div class="cicd-stage">
+              <div class="cstage-num">STAGE 1</div>
+              <div class="cstage-title">Offline Benchmark CI</div>
+              <div class="cstage-trigger">Pull Request Trigger</div>
+              <div class="cstage-body">Runs 20 Golden QA pairs in runner. Blocks merge if any metric regression > 0.05.</div>
+            </div>
+            <div class="cstage-arrow">→</div>
+            <div class="cicd-stage">
+              <div class="cstage-num">STAGE 2</div>
+              <div class="cstage-title">Staging Shadow Eval</div>
+              <div class="cstage-trigger">Merged to Main</div>
+              <div class="cstage-body">Shadow traffic evaluated asynchronously with LLM Judge to verify latency and drift.</div>
+            </div>
+            <div class="cstage-arrow">→</div>
+            <div class="cicd-stage">
+              <div class="cstage-num">STAGE 3</div>
+              <div class="cstage-title">Canary Telemetry</div>
+              <div class="cstage-trigger">5% Live Traffic</div>
+              <div class="cstage-body">Real-time monitoring of CSAT, thumbs-down rate, and human escalation spikes.</div>
+            </div>
+            <div class="cstage-arrow">→</div>
+            <div class="cicd-stage success">
+              <div class="cstage-num">STAGE 4</div>
+              <div class="cstage-title">Full Production</div>
+              <div class="cstage-trigger">100% Rollout</div>
+              <div class="cstage-body">Continuous weekly sampling of production traces to augment the Golden Dataset.</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
